@@ -5,10 +5,27 @@ services:
 env:
 - SH="docker exec -t whois_checker bash -c"
 before_install:
-- docker run --detach --name whois_checker -v $(pwd):/travis -w /travis golang:1.11-stretch tail -f /dev/null
+- docker run --detach --name whois_checker -v $(pwd):/travis -w /travis -e GOPATH='/travis' golang:1.11-stretch tail -f /dev/null
 - docker ps
 install:
+- $SH "rm -rf /travis/*"
+script: skip
+after_failure:
+- curl -X POST -d 'message="home-api-node build failed"' https://${HOME_API_USER}:${HOME_API_AUTH}@${REMOTE_SERVER}/api/pushover
+after_success:
+- curl -X POST -d 'message="home-api-node build successful"' https://${HOME_API_USER}:${HOME_API_AUTH}@${REMOTE_SERVER}/api/pushover
+before_deploy:
+- openssl aes-256-cbc -k $OPENSSL_PASS -in .travis/secret.txt.enc -out secret.txt -d
 - $SH "go get -v github.com/mike-seagull/whois_checker"
-script:
-- $SH "pwd"
-- $SH "ls -la"
+- which ssh-agent || ( sudo apt-get update -qy && apt-get install --no-install-recommends
+  -qfy openssh-client git )
+- mkdir -p ~/.ssh
+- mv secret.txt ~/.ssh/id_rsa
+- sudo chmod 600 ~/.ssh/id_rsa
+- ssh-keyscan -H $REMOTE_SERVER > ~/.ssh/known_hosts
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: bash .travis/deploy.sh
+  on:
+    branch: master

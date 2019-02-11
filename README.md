@@ -1,4 +1,5 @@
-Checks a domain to see if it is available<br/>
+[![Build Status](https://travis-ci.com/mike-seagull/whois_checker.svg?branch=master)](https://travis-ci.com/mike-seagull/whois_checker)
+<p>Checks a domain to see if it is available<p/>
 <h4>Environment Variables</h4>
 
 * HOME_API_USER
