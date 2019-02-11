@@ -1,0 +1,13 @@
+language: go
+sudo: required
+services:
+- docker
+env:
+- SH="docker exec -t whois_checker bash -c"
+before_install:
+- docker run --detach --name whois_checker -v $(pwd):/travis -w /travis golang:1.11-stretch tail -f /dev/null
+- docker ps
+install:
+- $SH "go get -v github.com/mike-seagull/whois_checker"
+script:
+- $SH "ls bin/"
