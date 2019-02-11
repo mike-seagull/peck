@@ -16,12 +16,12 @@ after_success:
 - curl -X POST -d 'message="home-api-node build successful"' https://${HOME_API_USER}:${HOME_API_AUTH}@${REMOTE_SERVER}/api/pushover
 before_deploy:
 - ls -la
-- openssl aes-256-cbc -k $OPENSSL_PASS -in .travis/secret.txt.enc -out secret.txt -d
+- openssl aes-256-cbc -k $OPENSSL_PASS -in .travis/secrets.enc -out id_rsa -d
 - $SH "go get -v github.com/mike-seagull/whois_checker"
 - which ssh-agent || ( sudo apt-get update -qy && apt-get install --no-install-recommends
   -qfy openssh-client git )
 - mkdir -p ~/.ssh
-- mv secret.txt ~/.ssh/id_rsa
+- mv id_rsa ~/.ssh/id_rsa
 - sudo chmod 600 ~/.ssh/id_rsa
 - ssh-keyscan -H $REMOTE_SERVER > ~/.ssh/known_hosts
 deploy:
