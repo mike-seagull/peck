@@ -10,4 +10,5 @@ before_install:
 install:
 - $SH "go get -v github.com/mike-seagull/whois_checker"
 script:
-- $SH "ls bin/"
+- $SH "pwd"
+- $SH "ls -la"
