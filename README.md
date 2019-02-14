@@ -7,5 +7,5 @@
 * HOME_API_DOMAIN
 
 <h5>To check a domain</h5>
-<code>whois_checker $domain</code>
+<code>domain_pecker $domain</code>
 <p>if the environment variables are provided, it will send a pushover notification if the domain is available.</p>
