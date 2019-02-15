@@ -3,9 +3,9 @@ sudo: required
 services:
 - docker
 env:
-- SH="docker exec -t whois_checker bash -c"
+- SH="docker exec -t domain_pecker bash -c"
 before_install:
-- docker run --detach --name whois_checker -v $(pwd):/travis -w /travis -e GOPATH='/travis' golang:1.11-stretch tail -f /dev/null
+- docker run --detach --name domain_pecker -v $(pwd):/travis -w /travis -e GOPATH='/travis' golang:1.11-stretch tail -f /dev/null
 - docker ps
 install:
 - $SH "rm -rf /travis/*"
@@ -16,7 +16,7 @@ after_success:
 - curl -X POST -d 'message="home-api-node build successful"' https://${HOME_API_USER}:${HOME_API_AUTH}@${REMOTE_SERVER}/api/pushover
 before_deploy:
 - openssl enc -aes-256-cbc -iv "${SSL_IV}" -K "${SSL_KEY}" -out id_rsa -in .travis/secrets.enc -d
-- $SH "go get -v github.com/mike-seagull/whois_checker"
+- $SH "go get -v github.com/mike-seagull/domain_pecker"
 - which ssh-agent || ( sudo apt-get update -qy && apt-get install --no-install-recommends
   -qfy openssh-client git )
 - mkdir -p ~/.ssh
