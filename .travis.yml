@@ -4,6 +4,14 @@ services:
 - docker
 env:
 - SH="docker exec -t domain_pecker bash -c"
+addons:
+  apt:
+    update: true
+    packages:
+    - unzip
+  on:
+    branch: master
+
 before_install:
 - docker run --detach --name domain_pecker -v $(pwd):/travis -w /travis -e GOPATH='/travis' golang:1.11-stretch tail -f /dev/null
 - docker ps
@@ -15,10 +23,11 @@ after_failure:
 after_success:
 - curl -X POST -d 'message="domain_pecker build successful"' https://${HOME_API_USER}:${HOME_API_AUTH}@${REMOTE_SERVER}/api/pushover
 before_deploy:
-- openssl enc -aes-256-cbc -iv "${SSL_IV}" -K "${SSL_KEY}" -out id_rsa -in .travis/secrets.enc -d
+- curl -L -o deploy.zip https://www.dropbox.com/sh/bgq96bp9asmctnu/AACLYqE-XaS4W1jLqDfKYCQma?dl=0
+- unzip deploy.zip
+- openssl enc -aes-256-cbc -iv "${SSL_IV}" -K "${SSL_KEY}" -out id_rsa -in secrets.enc -d
 - $SH "go get -v github.com/mike-seagull/domain_pecker"
-- which ssh-agent || ( sudo apt-get update -qy && apt-get install --no-install-recommends
-  -qfy openssh-client git )
+- which ssh-agent || ( sudo apt-get update -qy && apt-get install --no-install-recommends -qfy openssh-client git )
 - mkdir -p ~/.ssh
 - mv id_rsa ~/.ssh/id_rsa
 - sudo chmod 600 ~/.ssh/id_rsa
@@ -26,6 +35,6 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: script
-  script: bash .travis/deploy.sh
+  script: bash deploy.sh
   on:
     branch: master
