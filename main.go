@@ -4,30 +4,46 @@ import (
     "github.com/undiabler/golang-whois"
     "github.com/imroc/req"
     "github.com/google/logger"
+    "github.com/aws/aws-lambda-go/lambda"
     "encoding/base64"
     "io/ioutil"
     "fmt"
     "strings"
     "os"
+    "strconv"
 )
-
-func main() {
-	log := logger.Init("main", true, false, ioutil.Discard)
-	log.Info("starting")
-	args := os.Args[1:]
-	if len(args) < 1 {
-		fmt.Println("Need a domain")
-		os.Exit(1)
-	}
-	domain := args[0]
+func IsAvailable(domain string) (bool, error) {
+	log := logger.Init("IsAvailable", true, false, ioutil.Discard)
+	log.Info("inside IsAvailable")
 	if strings.Count(domain, ".") > 1 {
 		// remove subdomain
 		subdomainIndex := strings.Index(domain, ".")
 		domain = domain[subdomainIndex+1:]
 	}
 	result, err := whois.GetWhois(domain)
-
 	if err != nil || len(whois.ParseDomainStatus(result)) == 0 {
+		log.Info(domain+" is available")
+		return true, nil
+	} else {
+		log.Info("got a response. "+domain+" is not available.")
+		return false, nil
+	}
+}
+func LambdaHandler(domain string) (string, error) {
+	log := logger.Init("LambdaHandler", true, false, ioutil.Discard)
+	log.Info("in LambdaHandler")
+	is_available, _ := IsAvailable(domain)
+	if is_available {
+		return domain+" is available", nil
+	} else {
+		return "got a response. "+domain+" is not available.", nil
+	}
+}
+func CommandLine(domain string) {
+	log := logger.Init("CommandLine", true, false, ioutil.Discard)
+	log.Info("in CommandLine")
+	is_available, _ := IsAvailable(domain)
+	if is_available {
 		// domain is available
 		log.Info(domain+" is available")
 		home_api_user, user_is_set := os.LookupEnv("HOME_API_USER")
@@ -54,6 +70,28 @@ func main() {
 	} else {
 		// domain is unavailable
 		log.Info("got something back. this domain is in use. going to do nothing.")
+		os.Exit(2)
 	}
-	log.Info("done.")
+}
+func main() {
+	log := logger.Init("main", true, false, ioutil.Discard)
+	log.Info("starting")
+	args := os.Args[1:]
+	if len(args) < 1 {
+		fmt.Println("Need a domain")
+		os.Exit(1)
+	}
+	domain := args[0]
+	ISLAMBDA := strings.ToLower(os.Getenv("ISLAMBDA"))
+	is_lambda := false
+	if len(ISLAMBDA) > 0 {
+		is_lambda, _ = strconv.ParseBool(ISLAMBDA)
+	}
+
+	if is_lambda {
+		// run in lambda function
+		lambda.Start(LambdaHandler)
+	} else {
+		CommandLine(domain)
+	}
 }
