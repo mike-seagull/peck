@@ -7,11 +7,19 @@ import (
     "github.com/aws/aws-lambda-go/lambda"
     "encoding/base64"
     "io/ioutil"
+    "context"
     "fmt"
     "strings"
     "os"
     "strconv"
 )
+type Event struct {
+	domain string
+}
+type Response struct {
+	success bool
+	message string
+}
 func IsAvailable(domain string) (bool, error) {
 	log := logger.Init("IsAvailable", true, false, ioutil.Discard)
 	log.Info("inside IsAvailable")
@@ -29,17 +37,25 @@ func IsAvailable(domain string) (bool, error) {
 		return false, nil
 	}
 }
-func LambdaHandler(domain string) (string, error) {
+func LambdaHandler(ctx context.Context, req Event) (Response, error) {
 	log := logger.Init("LambdaHandler", true, false, ioutil.Discard)
+	fmt.Println(ctx)
+	fmt.Println(req)
 	log.Info("in LambdaHandler")
-	is_available, _ := IsAvailable(domain)
+	is_available, _ := IsAvailable(req.domain)
 	if is_available {
-		return domain+" is available", nil
+		return Response{success: true, message: req.domain+" is available"}, nil
 	} else {
-		return "got a response. "+domain+" is not available.", nil
+		return Response{success: true, message: "got a response. "+req.domain+" is not available."}, nil
 	}
 }
-func CommandLine(domain string) {
+func CommandLine() {
+	args := os.Args[1:]
+	if len(args) < 1 {
+		fmt.Println("Need a domain")
+		os.Exit(1)
+	}
+	domain := args[0]
 	log := logger.Init("CommandLine", true, false, ioutil.Discard)
 	log.Info("in CommandLine")
 	is_available, _ := IsAvailable(domain)
@@ -76,22 +92,15 @@ func CommandLine(domain string) {
 func main() {
 	log := logger.Init("main", true, false, ioutil.Discard)
 	log.Info("starting")
-	args := os.Args[1:]
-	if len(args) < 1 {
-		fmt.Println("Need a domain")
-		os.Exit(1)
-	}
-	domain := args[0]
 	ISLAMBDA := strings.ToLower(os.Getenv("ISLAMBDA"))
 	is_lambda := false
 	if len(ISLAMBDA) > 0 {
 		is_lambda, _ = strconv.ParseBool(ISLAMBDA)
 	}
-
 	if is_lambda {
 		// run in lambda function
 		lambda.Start(LambdaHandler)
 	} else {
-		CommandLine(domain)
+		CommandLine()
 	}
 }

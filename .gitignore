@@ -4,7 +4,9 @@
 *.dll
 *.so
 *.dylib
-
+main
+domain_pecker
+function.zip
 # Test binary, built with `go test -c`
 *.test
 
