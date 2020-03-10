@@ -2,14 +2,20 @@ domain_pecker
 ===
 Checks a domain to see if it is available
 ___
-[![Build Status](https://travis-ci.com/mike-seagull/domain_pecker.svg?branch=master)](https://travis-ci.com/mike-seagull/domain_pecker)
 
 ![alt text](woodpecker.png "Woodpecker")
-#### Environment Variables
-* HOME_API_USER
-* HOME_API_AUTH
-* HOME_API_DOMAIN
+
+Exits 0 if the domain is available, else exits > 0
+
 #### To check a domain
 ```domain_pecker $domain```
 
-if the environment variables are provided, it will send a pushover notification if the domain is available.
+#### Lambda
+It can also be used as a lambda function by providing an environment variable:
+
+`IS_LAMBDA=true`
+
+#### Development
+To package for Lambda:
+
+`go run mage.go package` or `mage package`
