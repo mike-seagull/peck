@@ -1,0 +1,21 @@
+# https://taskfile.dev
+
+version: '2'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: True
+  package:
+    desc: Package for Lambda
+    cmds:
+      - go build main.go
+      - zip function.zip main
+    env:
+      GOOS: linux
+  clean:
+    desc: Clean up environment
+    cmds:
+      - rm -f function.zip
+      - rm -f main
