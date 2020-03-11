@@ -20,6 +20,12 @@ func zip() error {
 	fmt.Println("zipping binary to function.zip")
 	return sh.Run("zip", "function.zip", "main")
 }
+// install dependencies
+func InstallDeps()  {
+	sh.Run("go", "get", "github.com/undiabler/golang-whois")
+	sh.Run("go", "get", "github.com/sirupsen/logrus")
+	sh.Run("go", "get", "github.com/aws/aws-lambda-go/lambda")
+}
 // package for lambda
 func Package() {
 	mg.SerialDeps(buildLinux, zip)
