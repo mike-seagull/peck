@@ -18,4 +18,4 @@ It can also be used as a lambda function by providing an environment variable:
 #### Development
 To package for Lambda:
 
-`go run mage.go package` or `mage package`
+`[task](https://taskfile.dev/#/) package`
