@@ -1,0 +1,18 @@
+---
+language: go
+
+go:
+  - 1.x
+
+before_install:
+  - go get github.com/magefile/mage/mage
+
+deploy:
+  provider: lambda
+  function_name: domain_pecker
+  region: "us-east-1"
+  role: "arn:aws:iam::0123456789012:role/lambda_basic_execution"
+  runtime: go1.x
+  handler_name: main
+  on:
+    branch: master
