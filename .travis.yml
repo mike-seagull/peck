@@ -1,15 +1,25 @@
 ---
 language: go
-
-go:
-  - 1.x
-
+sudo: required
+services:
+  - docker
+env:
+  - BINFILE="domain_pecker"
+  - SH="docker exec -t $BINFILE bash -c"
 before_install:
-  - go get github.com/magefile/mage/mage
+  - docker run --detach --name $BINFILE -v $(pwd):/travis -w /travis -e GOPATH='/travis' golang:1.11-stretch tail -f /dev/null
+  - docker ps
+install:
+  - $SH "rm -rf /travis/*"
+script: skip
+before_deploy:
+# build binary
+- $SH "go get github.com/mike-seagull/$BINFILE"
+- $SH "env GOOS=freebsd GOARCH=amd64 go build -a -o /travis/bin/$BINFILE github.com/mike-seagull/$BINFILE"
 
 deploy:
   provider: lambda
-  function_name: domain_pecker
+  function_name: $BINFILE
   region: "us-east-1"
   role: "arn:aws:iam::0123456789012:role/lambda_basic_execution"
   runtime: go1.x
