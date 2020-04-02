@@ -1,28 +1,32 @@
 ---
-language: go
+language: minimal
 sudo: required
 services:
   - docker
 env:
-  - BINFILE="domain_pecker"
-  - SH="docker exec -t $BINFILE bash -c"
-before_install:
-  - docker run --detach --name $BINFILE -v $(pwd):/travis -w /travis -e GOPATH='/travis' golang:1.11-stretch tail -f /dev/null
+  global:
+    - TRAVIS_REPO_NAME=${TRAVIS_REPO_SLUG#*/}
+    - SH="docker exec -t $TRAVIS_REPO_NAME bash -c"
+install: skip
+script:
+  - docker run --detach --name $TRAVIS_REPO_NAME -v $(pwd):/travis -w /travis -e GOPATH='/travis' golang:1.13-stretch tail -f /dev/null
   - docker ps
-install:
   - $SH "rm -rf /travis/*"
-script: skip
 before_deploy:
-# build binary
-- $SH "go get github.com/mike-seagull/$BINFILE"
-- $SH "env GOOS=freebsd GOARCH=amd64 go build -a -o /travis/bin/$BINFILE github.com/mike-seagull/$BINFILE"
-
+  - $SH "apt-get update -qy && apt-get install --no-install-recommends -qfy zip"
+  - $SH "go get github.com/$TRAVIS_REPO_SLUG"
+  - $SH "go run mage.go package"
 deploy:
   provider: lambda
-  function_name: $BINFILE
+  function_name: $TRAVIS_REPO_NAME
   region: "us-east-1"
-  role: "arn:aws:iam::0123456789012:role/lambda_basic_execution"
+  role: $ROLE_ARN
   runtime: go1.x
   handler_name: main
   on:
     branch: master
+notifications:
+  pushover:
+    api_key: ""
+    users: ""
+    enabled: false
