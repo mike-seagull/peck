@@ -22,11 +22,14 @@ deploy:
   region: "us-east-1"
   role: $ROLE_ARN
   runtime: go1.x
+  zip: function.zip
   handler_name: main
   on:
     branch: master
 notifications:
   pushover:
-    api_key: ""
-    users: ""
+    api_key: $PUSHOVER_API_KEY
+    users:
+      - $PUSHOVER_USER_KEY
+    template: "%{repository_name} (%{result}) : %{message}"
     enabled: false
