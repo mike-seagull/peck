@@ -32,4 +32,3 @@ notifications:
     users:
       - $PUSHOVER_USER_KEY
     template: "%{repository_name} (%{result}) : %{message}"
-    enabled: true
