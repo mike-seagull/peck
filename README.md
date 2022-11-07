@@ -1,4 +1,4 @@
-domain_pecker
+peck
 ===
 Checks a domain to see if it is available
 ___
